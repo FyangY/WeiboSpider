@@ -1,10 +1,11 @@
-import os
+﻿import os
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 import sys
 
 sys.path.append(os.getcwd())
@@ -16,8 +17,11 @@ TEMPLATES_FOLDER = os.getcwd() + '/sina/account_build/templates/'
 class WeiboLogin():
     def __init__(self, username, password):
         os.system('pkill -f phantom')
+        chrome_options = Options()
+    #    chrome_options.add_argument('--headless')
+        path='/Users/fyang/Documents/GitHub/chromedriver'
         self.url = 'https://passport.weibo.cn/signin/login?entry=mweibo&r=https://weibo.cn/'
-        self.browser = webdriver.PhantomJS()
+        self.browser = webdriver.Chrome(path,chrome_options=chrome_options)
         self.browser.set_window_size(1050, 840)
         self.wait = WebDriverWait(self.browser, 20)
         self.username = username
@@ -32,9 +36,11 @@ class WeiboLogin():
         username = self.wait.until(EC.presence_of_element_located((By.ID, 'loginName')))
         password = self.wait.until(EC.presence_of_element_located((By.ID, 'loginPassword')))
         submit = self.wait.until(EC.element_to_be_clickable((By.ID, 'loginAction')))
+        import time
         username.send_keys(self.username)
         password.send_keys(self.password)
         submit.click()
+        time.sleep(10)
 
     def run(self):
         """
@@ -42,10 +48,11 @@ class WeiboLogin():
         :return:
         """
         self.open()
-        WebDriverWait(self.browser, 30).until(
-            EC.title_is('我的首页')
-        )
+#        WebDriverWait(self.browser, 30).until(
+#            EC.title_is('我的首页')
+#        )
         cookies = self.browser.get_cookies()
+        print(cookies)
         cookie = [item["name"] + "=" + item["value"] for item in cookies]
         cookie_str = '; '.join(item for item in cookie)
         self.browser.quit()
